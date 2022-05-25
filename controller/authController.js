@@ -48,6 +48,7 @@ exports.loginOtpSend = async (req, res, _id) => {
       otp,
       createdAt: Date.now(),
       expiresAt: Date.now() + 3600000,
+
     });
     OtpDetail.save().then((result) => {
       sendOtp(result, res);
@@ -62,7 +63,7 @@ exports.loginOtpSend = async (req, res, _id) => {
     });
   }
 };
-
+/*
 exports.loginWithOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -73,11 +74,12 @@ exports.loginWithOtp = async (req, res) => {
     }
     const userDetail = await Otp.find({
       email,
+      
     });
     if (userDetail.length <= 0) {
       return res.status(400).json({
         type: "FAILED",
-        message: "Otp has been expired ",
+        message: " otp has ben expired ",
       });
     }
     const otpData = await Otp.findOne({ otp });
@@ -89,6 +91,8 @@ exports.loginWithOtp = async (req, res) => {
       }
     );
     if (otpData && userDetail) {
+      console.log("otp data:", otpData)
+      console.log("user email data", userDetail)
       await Otp.deleteMany({ email });
       res.status(200).json({
         type: "success",
@@ -96,9 +100,60 @@ exports.loginWithOtp = async (req, res) => {
         token,
       });
     } else {
+      console.log("otp data:", otpData)
       res.status(400).json({
         type: "Failed",
         message: "you are using Incorrect OTP",
+      });
+    }
+  } catch (e) {
+    console.log(e);
+    res.json({
+      status: "FAILED",
+      message: e.message,
+    });
+  }
+};
+
+*/
+
+exports.loginWithOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
+    const { expiresAt } = Date.now();
+    const userDetail = await Otp.find(
+      {
+        email, otp, expiresAt
+      });
+
+    if (userDetail.length <= 0) {
+      return res.status(400).json({
+        type: "FAILED",
+        message: " otp has been expired or incorrect ",
+      });
+    }
+    // const otpData = await Otp.findOne({ otp });
+
+    else {
+      const token = jwt.sign(
+        { email: userDetail.email },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1h",
+        }
+      );
+      //  console.log("otp data:", otpData)
+      console.log("user email data", userDetail)
+      await Otp.deleteMany({ email });
+      res.status(200).json({
+        type: "success",
+        message: "welcome to our Website",
+        token,
       });
     }
   } catch (e) {
