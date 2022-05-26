@@ -13,9 +13,8 @@ exports.signUp = async (req, res, next) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
-    const { username, email } = req.body;
+    const { email } = req.body;
     const newUser = new User({
-      username,
       email,
     });
     newUser.save().then((result) => {
@@ -47,7 +46,7 @@ exports.loginOtpSend = async (req, res, _id) => {
       userId: _id,
       otp,
       createdAt: Date.now(),
-      expiresAt: Date.now() + 3600000,
+      expiresAt: Date.now() + 1800000,
 
     });
     OtpDetail.save().then((result) => {
@@ -63,59 +62,6 @@ exports.loginOtpSend = async (req, res, _id) => {
     });
   }
 };
-/*
-exports.loginWithOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(422).json({ errors: errors.array() });
-      return;
-    }
-    const userDetail = await Otp.find({
-      email,
-      
-    });
-    if (userDetail.length <= 0) {
-      return res.status(400).json({
-        type: "FAILED",
-        message: " otp has ben expired ",
-      });
-    }
-    const otpData = await Otp.findOne({ otp });
-    const token = jwt.sign(
-      { email: userDetail.email },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "1h",
-      }
-    );
-    if (otpData && userDetail) {
-      console.log("otp data:", otpData)
-      console.log("user email data", userDetail)
-      await Otp.deleteMany({ email });
-      res.status(200).json({
-        type: "success",
-        message: "welcome to our Website",
-        token,
-      });
-    } else {
-      console.log("otp data:", otpData)
-      res.status(400).json({
-        type: "Failed",
-        message: "you are using Incorrect OTP",
-      });
-    }
-  } catch (e) {
-    console.log(e);
-    res.json({
-      status: "FAILED",
-      message: e.message,
-    });
-  }
-};
-
-*/
 
 exports.loginWithOtp = async (req, res) => {
   try {
@@ -125,20 +71,17 @@ exports.loginWithOtp = async (req, res) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
-    const { expiresAt } = Date.now();
-    const userDetail = await Otp.find(
+    const userDetail = await Otp.findOne(
       {
-        email, otp, expiresAt
+        email, otp, expiresAt: { $gte: new Date() }
       });
-
-    if (userDetail.length <= 0) {
+    if (!userDetail) {
+      //  console.log(userDetail.length)
       return res.status(400).json({
         type: "FAILED",
         message: " otp has been expired or incorrect ",
       });
     }
-    // const otpData = await Otp.findOne({ otp });
-
     else {
       const token = jwt.sign(
         { email: userDetail.email },
@@ -147,7 +90,6 @@ exports.loginWithOtp = async (req, res) => {
           expiresIn: "1h",
         }
       );
-      //  console.log("otp data:", otpData)
       console.log("user email data", userDetail)
       await Otp.deleteMany({ email });
       res.status(200).json({

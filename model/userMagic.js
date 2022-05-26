@@ -16,6 +16,7 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+
 });
 
 const Magic = mongoose.model("Magic", UserSchema);

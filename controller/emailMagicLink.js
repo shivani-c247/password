@@ -36,3 +36,29 @@ exports.sendMagicLink = async (email, link, which) => {
     return { ok: false, message: err };
   }
 };
+
+
+/*
+exports.sendMagicLink = async (email, link, which) => {
+
+  var subj = "Your sign in link",
+    body = `<p>Hello friend and welcome back. This is your link to sign in to your account: 
+        ${URL + email + "/" + link} 
+        </p><p>Needless to remind you not to share this link with anyone </p>`;
+
+  const mailOptions = {
+    to: email,
+    from: process.env.EMAIL,
+    subject: subj,
+    html: body,
+  };
+  try {
+    const response = await transport.sendMail(mailOptions);
+    console.log("Link sent  successfully");
+    return { ok: true, message: "email sent" };
+  } catch (err) {
+    console.log("Something didn't work out ", err);
+    return { ok: false, message: err };
+  }
+};
+*/
