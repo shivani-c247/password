@@ -1,64 +1,56 @@
 const nodemailer = require("nodemailer");
-const transport = nodemailer.createTransport({
-  port: process.env.PORT,
-  host: "smtp.gmail.com",
-  auth: {
-    user: process.env.EMAIL,
-    pass: process.env.PASS,
-  },
-});
+const MagicLink = require("../model/linkModel");
+const jwt = require("jsonwebtoken");
+const jwt_secret = process.env.JWT_SECRET;
+
 const URL = "http://localhost:3000/email/";
-
-exports.sendMagicLink = async (email, link, which) => {
-  if (which == "signup") {
-    var subj = "Your sign up link",
-      body = `<p>Hello friend and welcome to our website. This is your link to confirm your account: 
-        ${URL + email + "/" + link} 
-        </p><p>Needless to remind you not to share this link with anyone </p>`;
-  } else {
-    var subj = "Your sign in link",
-      body = `<p>Hello friend and welcome back. This is your link to sign in to your account: 
-        ${URL + email + "/" + link} 
-        </p><p>Needless to remind you not to share this link with anyone </p>`;
-  }
-  const mailOptions = {
-    to: email,
-    from: process.env.EMAIL,
-    subject: subj,
-    html: body,
-  };
+const sendEmail = async ({ _id, email }, res) => {
   try {
-    const response = await transport.sendMail(mailOptions);
-    console.log("Link sent  successfully");
-    return { ok: true, message: "email sent" };
-  } catch (err) {
-    console.log("Something didn't work out ", err);
-    return { ok: false, message: err };
+    const token = jwt.sign(
+      { email: email },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "5m",
+      }
+    );
+    let transporter = nodemailer.createTransport({
+      port: process.env.PORT,
+      host: "smtp.gmail.com",
+      auth: {
+        user: process.env.EMAIL,
+        pass: process.env.PASS,
+      },
+    });
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: "This is Your link",
+      html: `${URL + email + "/" + token} is the link for login and is valid for 6 mins. <br>
+       <h> Please DO NOT share with anyone to keep your account safe<h>`,
+    };
+    const linkDetail = new MagicLink({
+      email,
+      userId: _id,
+      token,
+    });
+    linkDetail.save()
+    await transporter.sendMail(mailOptions);
+    return res.json({
+      status: "PENDING",
+      message: "link has been sent",
+      data: {
+        token,
+        email,
+        userId: _id
+      },
+    });
+  } catch (e) {
+    console.log(e);
+    res.json({
+      status: "FAILED",
+      message: e.message,
+    });
   }
 };
 
-
-/*
-exports.sendMagicLink = async (email, link, which) => {
-
-  var subj = "Your sign in link",
-    body = `<p>Hello friend and welcome back. This is your link to sign in to your account: 
-        ${URL + email + "/" + link} 
-        </p><p>Needless to remind you not to share this link with anyone </p>`;
-
-  const mailOptions = {
-    to: email,
-    from: process.env.EMAIL,
-    subject: subj,
-    html: body,
-  };
-  try {
-    const response = await transport.sendMail(mailOptions);
-    console.log("Link sent  successfully");
-    return { ok: true, message: "email sent" };
-  } catch (err) {
-    console.log("Something didn't work out ", err);
-    return { ok: false, message: err };
-  }
-};
-*/
+module.exports.sendEmail = sendEmail;

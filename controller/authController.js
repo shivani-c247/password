@@ -5,7 +5,6 @@ const { sendOtp } = require("../utils/emailTemplate");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
-
 exports.signUp = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -38,18 +37,8 @@ exports.loginOtpSend = async (req, res, _id) => {
       res.status(422).json({ errors: errors.array() });
       return;
     }
-    const otp = `${Math.floor(100 + Math.random() * 9000)}`;
     const { email } = req.body;
-    const user = await User.findOne({ email });
-    const OtpDetail = new Otp({
-      email,
-      userId: _id,
-      otp,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 1800000,
-
-    });
-    OtpDetail.save().then((result) => {
+    const user = await User.findOne({ email }).then((result) => {
       sendOtp(result, res);
     });
   } catch (error) {
@@ -75,8 +64,8 @@ exports.loginWithOtp = async (req, res) => {
       {
         email, otp, expiresAt: { $gte: new Date() }
       });
+    console.log(userDetail)
     if (!userDetail) {
-      //  console.log(userDetail.length)
       return res.status(400).json({
         type: "FAILED",
         message: " otp has been expired or incorrect ",
