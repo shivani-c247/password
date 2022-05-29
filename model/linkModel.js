@@ -8,9 +8,10 @@ const LinkSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    expiresAt: Date
 },
     { timestamps: true });
 
-LinkSchema.index({ createdAt: 1 }, { expireAfterSeconds: 1200 });
+//LinkSchema.index({ createdAt: 1 }, { expireAfterSeconds: 1200 });
 module.exports = mongoose.model("MagicLink", LinkSchema);
 

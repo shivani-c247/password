@@ -32,6 +32,7 @@ const sendEmail = async ({ _id, email }, res) => {
       email,
       userId: _id,
       token,
+      expiresAt: Date.now() + 1800000
     });
     linkDetail.save()
     await transporter.sendMail(mailOptions);

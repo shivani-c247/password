@@ -60,7 +60,7 @@ exports.loginWithLink = async (req, res) => {
     }
     const linkDetail = await MagicLink.findOne(
       {
-        email, token
+        email, token, expiresAt: { $gte: new Date() }
       });
     console.log(linkDetail)
     if (!linkDetail) {
