@@ -1,8 +1,8 @@
 const User = require("../model/userOtpModel");
 const Otp = require("../model/otpModel");
 const { validationResult } = require("express-validator");
-const { sendOtp } = require("../utils/emailTemplate");
 const jwt = require("jsonwebtoken");
+const { Email } = require("../utils/emailTemplate")
 const dotenv = require("dotenv");
 dotenv.config();
 exports.signUp = async (req, res, next) => {
@@ -38,8 +38,25 @@ exports.loginOtpSend = async (req, res, _id) => {
       return;
     }
     const { email } = req.body;
-    const user = await User.findOne({ email }).then((result) => {
-      sendOtp(result, res);
+    const otp = `${Math.floor(100 + Math.random() * 9000)}`;
+    const user = await User.findOne({ email })
+    const OtpDetail = new Otp({
+      email,
+      userId: _id,
+      otp,
+      expiresAt: Date.now() + 1800000,
+
+    });
+    OtpDetail.save();
+    const emailClient = new Email();
+    emailClient.setBody(`${otp} is the one time password(OTP) for login and is valid for 3 mins. <br>
+    <h> Please DO NOT share with anyone to keep your account safe<h>`);
+    emailClient.setSubject("This is your One Time Password ");
+    emailClient.send(email);
+    console.log(OtpDetail);
+    return res.status(200).json({
+      message: "Otp has been sent successfully",
+      otp: otp,
     });
   } catch (error) {
     console.log(error);

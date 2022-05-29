@@ -1,7 +1,8 @@
 const Magic = require("../model/userMagic");
 const MagicLink = require("../model/linkModel")
-const { sendEmail } = require("./emailMagicLink");
+const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
+const { Email } = require("../utils/emailTemplate")
 exports.register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -35,15 +36,35 @@ exports.loginLinkSend = async (req, res, _id) => {
       return;
     }
     const { email } = req.body;
-    const user = await Magic.findOne({ email }).then((result) => {
-      sendEmail(result, res);
+    const user = await Magic.findOne({ email })
+    const payload = {
+      email: user.email,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "3m" });
+    const link = `http://localhost:3000/V1/api/link/${email}/${token}`;
+
+    const linkDetail = new MagicLink({
+      email,
+      userId: _id,
+      token,
+      expiresAt: Date.now() + 1800000
+    });
+    linkDetail.save()
+    const emailClient = new Email();
+    emailClient.setBody(`${link} is the one time link for login and is valid for 3 mins. <br>
+    <h> Please DO NOT share with anyone to keep your account safe<h>`);
+    emailClient.setSubject("link for login");
+    emailClient.send(email);
+    console.log(linkDetail);
+    return res.status(200).json({
+      message: "Link has been sent",
+      link: token,
     });
   } catch (error) {
     console.log(error);
     return res.status(500).json({
       success: false,
       message:
-
         "We are having some error while completing your request. Please try again after some time.",
       error: error,
     });
@@ -76,7 +97,6 @@ exports.loginWithLink = async (req, res) => {
       res.status(200).json({
         type: "success",
         message: "welcome to our Website",
-
       });
     }
   } catch (e) {
