@@ -19,7 +19,7 @@ class sendEmail {
     }
     async send(email) {
         if (!email) {
-            throw new Error("email not set");
+            throw new Error("email not sent");
         }
         const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
