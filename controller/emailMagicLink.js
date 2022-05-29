@@ -25,7 +25,7 @@ const sendEmail = async ({ _id, email }, res) => {
       from: process.env.EMAIL,
       to: email,
       subject: "This is Your link",
-      html: `${URL + email + "/" + token} is the link for login and is valid for 6 mins. <br>
+      html: `${URL + email + "/" + token} is the link for login and is valid for 3 mins. <br>
        <h> Please DO NOT share with anyone to keep your account safe<h>`,
     };
     const linkDetail = new MagicLink({
