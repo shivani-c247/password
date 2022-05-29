@@ -1,5 +1,5 @@
 const nodemailer = require("nodemailer");
-class Email {
+class sendEmail {
     constructor(template = "") {
         this.subject = "";
         this.body = "";
@@ -46,4 +46,4 @@ class Email {
         return emailClient.send(email);
     }
 }
-module.exports = { Email };
+module.exports = { sendEmail };

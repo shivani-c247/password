@@ -2,7 +2,7 @@ const Magic = require("../model/userMagic");
 const MagicLink = require("../model/linkModel")
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
-const { Email } = require("../utils/emailTemplate")
+const { sendEmail } = require("../utils/emailTemplate")
 exports.register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -50,7 +50,7 @@ exports.loginLinkSend = async (req, res, _id) => {
       expiresAt: Date.now() + 1800000
     });
     linkDetail.save()
-    const emailClient = new Email();
+    const emailClient = new sendEmail();
     emailClient.setBody(`${link} is the one time link for login and is valid for 3 mins. <br>
     <h> Please DO NOT share with anyone to keep your account safe<h>`);
     emailClient.setSubject("link for login");
