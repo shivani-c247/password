@@ -39,7 +39,7 @@ class sendEmail {
         return info;
     }
     static sendEmail(data, email, cc = []) {
-        const emailClient = new Email();
+        const emailClient = new sendEmail();
         emailClient.setBody(data);
         emailClient.setSubject(subject);
         emailClient.setCC(cc);

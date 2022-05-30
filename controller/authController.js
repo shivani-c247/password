@@ -50,7 +50,7 @@ exports.loginOtpSend = async (req, res, _id) => {
     OtpDetail.save();
     const emailClient = new sendEmail();
     emailClient.setBody(`${otp} is the one time password(OTP) for login and is valid for 3 mins. <br>
-    <h> Please DO NOT share with anyone to keep your account safe<h>`);
+     Please DO NOT share with anyone to keep your account safe`);
     emailClient.setSubject("This is your One Time Password ");
     emailClient.send(email);
     console.log(OtpDetail);

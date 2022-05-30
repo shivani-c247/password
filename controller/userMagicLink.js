@@ -52,8 +52,8 @@ exports.loginLinkSend = async (req, res, _id) => {
     linkDetail.save()
     const emailClient = new sendEmail();
     emailClient.setBody(`${link} is the one time link for login and is valid for 3 mins. <br>
-    <h> Please DO NOT share with anyone to keep your account safe<h>`);
-    emailClient.setSubject("link for login");
+       Please DO NOT share with anyone to keep your account safe`);
+    emailClient.setSubject("This is your link for login ");
     emailClient.send(email);
     console.log(linkDetail);
     return res.status(200).json({
